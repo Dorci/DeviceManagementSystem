@@ -12,13 +12,12 @@ public class DeviceService : IDeviceService
     public async Task<IReadOnlyList<DeviceResponseDto>> GetAllAsync(CancellationToken ct)
     {
         return await _context.Devices
-            .AsNoTracking()
             .Select(device => ToResponse(device))
             .ToListAsync(ct);    }
 
     public async Task<DeviceResponseDto?> GetByIdAsync(Guid id, CancellationToken ct)
     {
-        var device = await _context.Devices.AsNoTracking()
+        var device = await _context.Devices
             .FirstOrDefaultAsync(device => device.SerialNumber == id, ct);
         return device is null ? null : ToResponse(device);    }
 

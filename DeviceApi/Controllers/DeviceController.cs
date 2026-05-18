@@ -1,4 +1,5 @@
 using DeviceApi.Models;
+using DeviceApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,85 +10,41 @@ namespace DeviceApi.Controllers
     [ApiController]
     public class DeviceController : ControllerBase
     {
-        DeviceContext _context;
-
-        public DeviceController(DeviceContext context)
-        {
-            _context = context;
-        }
+        private readonly IDeviceService _service;
+        public DeviceController(IDeviceService service) => _service = service;
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Device>>> Get()
+        public async Task<ActionResult<IReadOnlyList<DeviceResponseDto>>> GetAll(CancellationToken ct)
+            => Ok(await _service.GetAllAsync(ct));
+      
+        [HttpGet("{id:guid}")]
+        public async Task<ActionResult<DeviceResponseDto>> GetById(Guid id, CancellationToken ct)
         {
-            return await _context.Devices.ToListAsync();
-        }
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Device>> Get(Guid id)
-        {
-            var device = await _context.Devices.FindAsync(id);
-            if (device != null) return device;
-            
-            return NotFound();
+            var device = await _service.GetByIdAsync(id, ct);
+            return device is null ? NotFound() : Ok(device);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Device>> PostDevice(Device device)
+        public async Task<ActionResult<DeviceResponseDto>> Create(
+            CreateDeviceRequestDto request, CancellationToken ct)
         {
-            _context.Devices.Add(device);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(Get), new { id = device.SerialNumber }, device);
+            var newDevice = await _service.CreateAsync(request, ct);
+            return CreatedAtAction(nameof(GetById), new { id = newDevice.SerialNumber }, newDevice);
         }
-
  
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutDevice(Guid id, Device device)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(
+            Guid id, UpdateDeviceRequestDto request, CancellationToken ct)
         {
-            if (id != device.SerialNumber)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(device).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!DeviceExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            var updated = await _service.UpdateAsync(id, request, ct);
+            return updated ? NoContent() : NotFound();
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteDevice(Guid id)
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
         {
-            var device = await _context.Devices.FindAsync(id);
-            if (device == null)
-            {
-                return NotFound();
-            }
-
-            _context.Devices.Remove(device);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-        
-        private bool DeviceExists(Guid id)
-        {
-            return _context.Devices.Any(e => e.SerialNumber == id);
+            var deleted = await _service.DeleteAsync(id, ct);
+            return deleted ? NoContent() : NotFound();
         }
     }
 }

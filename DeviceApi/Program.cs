@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using DeviceApi.Models;
+using DeviceApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ builder.Services.AddControllers()
     });
 builder.Services.AddDbContext<DeviceContext>(opt =>
     opt.UseInMemoryDatabase("DevicesDb"));
+builder.Services.AddScoped<IDeviceService, DeviceService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

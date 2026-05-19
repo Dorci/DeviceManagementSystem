@@ -9,5 +9,4 @@ public interface IDeviceService
     Task<DeviceResponseDto> CreateAsync(CreateDeviceRequestDto request, CancellationToken ct);
     Task<bool> UpdateAsync(Guid id, UpdateDeviceRequestDto request, CancellationToken ct);
     Task<bool> DeleteAsync(Guid id, CancellationToken ct);
-
 }

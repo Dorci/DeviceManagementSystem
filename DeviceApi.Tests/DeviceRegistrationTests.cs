@@ -17,7 +17,6 @@ public class DeviceRegistrationTests
         // Act
         var result = await service.CreateAsync(
             new CreateDeviceRequestDto(
-                device.SerialNumber,
                 device.ModelName,
                 device.ModelId,
                 device.Manufacturer,

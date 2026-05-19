@@ -1,6 +1,7 @@
-using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 using DeviceApi.Models;
 using DeviceApi.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(
-            new System.Text.Json.Serialization.JsonStringEnumConverter());
+            new JsonStringEnumConverter());
     });
 builder.Services.AddDbContext<DeviceContext>(opt =>
     opt.UseInMemoryDatabase("DevicesDb"));

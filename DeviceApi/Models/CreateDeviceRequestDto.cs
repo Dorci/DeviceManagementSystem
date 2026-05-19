@@ -1,7 +1,6 @@
 namespace DeviceApi.Models;
 
 public record CreateDeviceRequestDto(
-    Guid SerialNumber,
     string ModelName,
     string ModelId,
     string Manufacturer,

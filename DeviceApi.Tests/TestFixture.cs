@@ -8,7 +8,7 @@ public class TestFixture
     public static DeviceContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<DeviceContext>()
-            .UseInMemoryDatabase(databaseName: "TestDeviceDb")
+            .UseInMemoryDatabase("TestDeviceDb")
             .Options;
 
         var context = new DeviceContext(options);

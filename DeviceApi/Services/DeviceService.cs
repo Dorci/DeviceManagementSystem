@@ -7,19 +7,24 @@ public class DeviceService : IDeviceService
 {
     private readonly DeviceContext _context;
 
-    public DeviceService(DeviceContext context) => _context = context;
+    public DeviceService(DeviceContext context)
+    {
+        _context = context;
+    }
 
     public async Task<IReadOnlyList<DeviceResponseDto>> GetAllAsync(CancellationToken ct)
     {
         return await _context.Devices
             .Select(device => ToResponse(device))
-            .ToListAsync(ct);    }
+            .ToListAsync(ct);
+    }
 
     public async Task<DeviceResponseDto?> GetByIdAsync(Guid id, CancellationToken ct)
     {
         var device = await _context.Devices
             .FirstOrDefaultAsync(device => device.SerialNumber == id, ct);
-        return device is null ? null : ToResponse(device);    }
+        return device is null ? null : ToResponse(device);
+    }
 
     public async Task<DeviceResponseDto> CreateAsync(CreateDeviceRequestDto request, CancellationToken ct)
     {
@@ -32,7 +37,7 @@ public class DeviceService : IDeviceService
             PrimaryUser = request.PrimaryUser,
             OperatingSystem = request.OperatingSystem,
             DeviceType = request.DeviceType,
-            Status = DeviceStatus.Active
+            Status = request.Status,
         };
 
         _context.Devices.Add(device);
@@ -48,6 +53,7 @@ public class DeviceService : IDeviceService
 
         device.PrimaryUser = request.PrimaryUser;
         device.OperatingSystem = request.OperatingSystem;
+        device.DeviceType = request.DeviceType;
         device.Status = request.Status;
 
         await _context.SaveChangesAsync(ct);
@@ -61,10 +67,12 @@ public class DeviceService : IDeviceService
 
         _context.Devices.Remove(device);
         await _context.SaveChangesAsync(ct);
-        return true;    
+        return true;
     }
-    
-    private static DeviceResponseDto ToResponse(Device device) =>
-        new(device.SerialNumber, device.ModelName, device.ModelId, device.Manufacturer,
+
+    private static DeviceResponseDto ToResponse(Device device)
+    {
+        return new DeviceResponseDto(device.SerialNumber, device.ModelName, device.ModelId, device.Manufacturer,
             device.PrimaryUser, device.OperatingSystem, device.DeviceType, device.Status);
+    }
 }
